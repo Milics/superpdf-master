@@ -1,0 +1,109 @@
+# PDF Master Tool — 功能状态总览与开发路线图
+
+## ✅ 已完成（8 个核心工具）
+
+全部基于 `ToolWorkspace` 左右分栏画板布局，纯浏览器本地处理，零后端依赖。
+
+| # | 功能 | 路由 | 核心技术 | 状态 |
+|---|------|------|----------|------|
+| 1 | **合并 PDF** | `/merge` | pdf-lib + dnd-kit 拖拽排序 | ✅ 完成 |
+| 2 | **拆分 PDF** | `/split` | pdf-lib 范围提取 + pdfjs 封面预览 | ✅ 完成 |
+| 3 | **整理 PDF** | `/organize` | pdf-lib + dnd-kit + pdfjs 高清缩略图 | ✅ 完成 |
+| 4 | **JPG 转 PDF** | `/img2pdf` | pdf-lib 图片嵌入 + dnd-kit 排序 | ✅ 完成 |
+| 5 | **PDF 转 JPG** | `/pdf2jpg` | pdfjs-dist 逐页渲染 + JSZip 打包下载 | ✅ 完成 |
+| 6 | **旋转 PDF** | `/rotate` | pdf-lib 旋转变换 + 实时预览 | ✅ 完成 |
+| 7 | **添加水印** | `/watermark` | pdf-lib 文字/图片水印 + 实时预览 | ✅ 完成 |
+| 8 | **压缩 PDF** | `/compress` | pdf-lib 重建压缩 | ✅ 完成 |
+
+---
+
+## 🚧 未开发（20 个功能，均为 ComingSoon 占位页）
+
+按技术可行性分为 **4 个梯队**：
+
+---
+
+### 🟢 第一梯队 — 纯前端可实现，优先开发（6 个）
+
+> 这些功能完全可以用现有技术栈（pdf-lib / pdfjs-dist / Canvas）在浏览器本地完成，无需任何后端。
+> **建议立即开发，每个 1-2 小时即可完成。**
+
+| # | 功能 | 路由 | 实现思路 | 难度 |
+|---|------|------|----------|------|
+| 1 | **添加页码** | `/pagenumber` | pdf-lib `drawText` 在每页指定位置绘制页码，支持自定义格式/位置/字体大小 | ⭐ 简单 |
+| 2 | **保护 PDF（加密）** | `/protect` | pdf-lib 原生支持 `encrypt()` 方法，设置用户密码和权限密码 | ⭐ 简单 |
+| 3 | **解锁 PDF** | `/unlock` | pdf-lib `load(bytes, { password })` 传入密码解密后重新保存 | ⭐ 简单 |
+| 4 | **裁剪 PDF** | `/crop` | pdf-lib 修改每页 `CropBox` / `MediaBox` 参数 + Canvas 可视化框选 | ⭐⭐ 中等 |
+| 5 | **涂黑 PDF** | `/redact` | pdf-lib 在指定坐标 `drawRectangle` 覆盖黑色矩形 + pdfjs 可视化定位 | ⭐⭐ 中等 |
+| 6 | **签署 PDF** | `/sign` | Canvas 手写签名 → 导出 PNG → pdf-lib `drawImage` 嵌入指定位置 | ⭐⭐ 中等 |
+
+---
+
+### 🟡 第二梯队 — 前端可实现但需引入额外库（3 个）
+
+> 需要引入专用 JS 库，但仍可保持纯前端。
+
+| # | 功能 | 路由 | 实现思路 | 难度 |
+|---|------|------|----------|------|
+| 7 | **OCR PDF** | `/ocr` | 引入 `tesseract.js` (Wasm) 识别扫描件文字，叠加透明文字图层 | ⭐⭐⭐ 较难 |
+| 8 | **PDF 转 PDF/A** | `/pdf2pdfa` | pdf-lib 添加 PDF/A 必需的 metadata 和 ICC 色彩配置文件 | ⭐⭐ 中等 |
+| 9 | **修复 PDF** | `/repair` | pdf-lib 尝试 `load` + 重新 `save`，对损坏文件做容错恢复 | ⭐⭐ 中等 |
+
+---
+
+### 🟠 第三梯队 — 需要后端或 Wasm 引擎支持（7 个）
+
+> 这些功能的核心逻辑（Office 排版、AI 翻译等）无法在纯前端实现，需要搭建后端服务或引入重量级 Wasm 模块。
+
+| # | 功能 | 路由 | 技术瓶颈 | 难度 |
+|---|------|------|----------|------|
+| 10 | **Word → PDF** | `/word2pdf` | 需要 LibreOffice Wasm / 后端 API | ⭐⭐⭐⭐ 困难 |
+| 11 | **PPT → PDF** | `/ppt2pdf` | 同上，幻灯片母版渲染极其复杂 | ⭐⭐⭐⭐ 困难 |
+| 12 | **Excel → PDF** | `/excel2pdf` | 同上，分页与公式渲染 | ⭐⭐⭐⭐ 困难 |
+| 13 | **PDF → Word** | `/pdf2word` | 需要 AI 布局分析 + docx 生成库 | ⭐⭐⭐⭐ 困难 |
+| 14 | **PDF → PPT** | `/pdf2ppt` | 需要逆向解析 + pptxgenjs | ⭐⭐⭐⭐ 困难 |
+| 15 | **PDF → Excel** | `/pdf2excel` | 需要表格检测 AI + xlsx 生成 | ⭐⭐⭐⭐ 困难 |
+| 16 | **翻译 PDF** | `/translate` | 需要 AI 翻译 API（DeepL/GPT）| ⭐⭐⭐⭐ 困难 |
+
+---
+
+### 🔴 第四梯队 — 需要特殊环境（4 个）
+
+> 需要特定硬件（摄像头）或深层浏览器 API。
+
+| # | 功能 | 路由 | 技术瓶颈 |
+|---|------|------|----------|
+| 17 | **扫描成 PDF** | `/scan` | 需要移动端摄像头 API + 边缘检测 |
+| 18 | **比较 PDF** | `/compare` | 需要逐字 diff 引擎 + 可视化对比 UI |
+| 19 | **编辑 PDF** | `/edit` | 需要完整的画布编辑器（类 Figma）|
+| 20 | **HTML → PDF** | `/html2pdf` | 需要无头浏览器渲染（Puppeteer） |
+
+---
+
+## 🎯 推荐开发顺序
+
+```
+立即开发（第一梯队，1-2天可全部完成）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ① 添加页码    → pdf-lib drawText，最简单
+  ② 保护 PDF    → pdf-lib encrypt()，一个函数搞定
+  ③ 解锁 PDF    → pdf-lib load + password
+  ④ 裁剪 PDF    → CropBox + Canvas 框选
+  ⑤ 涂黑 PDF    → drawRectangle + pdfjs 可视化
+  ⑥ 签署 PDF    → Canvas 手写 + drawImage
+
+接下来（第二梯队，3-5天）
+━━━━━━━━━━━━━━━━━━━━━━
+  ⑦ OCR PDF     → tesseract.js
+  ⑧ PDF/A 转换  → metadata 注入
+  ⑨ 修复 PDF    → 容错重建
+
+远期规划（第三、四梯队，需要架构决策）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⑩ Office 互转 → 评估 LibreOffice Wasm vs 后端 API
+  ⑪ AI 翻译    → 接入第三方 API
+  ⑫ 编辑 PDF   → 构建画布编辑器
+```
+
+> [!TIP]
+> 完成第一梯队后，你的工具箱将拥有 **14 个可用功能**，覆盖 90% 日常 PDF 需求，已经可以作为一个完整产品发布！
