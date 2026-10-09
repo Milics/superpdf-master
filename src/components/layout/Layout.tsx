@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation, useOutlet } from 'react-router-dom';
-import { Layers, Github, FileText, SunMedium, Moon } from 'lucide-react';
+import { Layers, FileText, SunMedium, Moon } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { PageTransition } from '@/components/ui/PageTransition';
 
@@ -53,14 +53,6 @@ export function Layout() {
                         >
                             {isDark ? <SunMedium className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                         </button>
-                        <a
-                            href="https://github.com"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="p-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                        >
-                            <Github className="h-5 w-5" />
-                        </a>
                     </div>
                 </div>
             </header>
