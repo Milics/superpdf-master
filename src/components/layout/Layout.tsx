@@ -38,8 +38,8 @@ export function Layout() {
             <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <Link to="/" className="flex items-center space-x-2.5 transition-transform hover:scale-105 active:scale-95 group">
-                        <div className="p-1 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110">
-                            <PdfMasterLogo className="h-7 w-7" />
+                        <div className="flex items-center justify-center transition-transform group-hover:scale-105">
+                            <PdfMasterLogo className="h-9 w-9" />
                         </div>
                         <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
                             PDF Master

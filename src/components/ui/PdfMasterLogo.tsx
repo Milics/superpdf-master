@@ -5,12 +5,12 @@ interface PdfMasterLogoProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
 }
 
-export function PdfMasterLogo({ className = 'w-7 h-7', size, ...props }: PdfMasterLogoProps) {
+export function PdfMasterLogo({ className = 'w-9 h-9', size, ...props }: PdfMasterLogoProps) {
   const id = useId().replace(/:/g, '');
 
   return (
     <svg
-      viewBox="0 0 64 64"
+      viewBox="10 0 52 54"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
