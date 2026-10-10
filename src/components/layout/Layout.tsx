@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation, useOutlet } from 'react-router-dom';
-import { Layers, FileText, SunMedium, Moon } from 'lucide-react';
+import { FileText, SunMedium, Moon } from 'lucide-react';
+import { PdfMasterLogo } from '@/components/ui/PdfMasterLogo';
 import { AnimatePresence } from 'framer-motion';
 import { PageTransition } from '@/components/ui/PageTransition';
 
@@ -36,9 +37,9 @@ export function Layout() {
         <div className="min-h-screen bg-background text-foreground flex flex-col font-sans antialiased transition-colors duration-300">
             <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-                    <Link to="/" className="flex items-center space-x-2 transition-transform hover:scale-105 active:scale-95">
-                        <div className="bg-primary/10 p-2 rounded-lg text-primary">
-                            <Layers className="h-6 w-6" />
+                    <Link to="/" className="flex items-center space-x-2.5 transition-transform hover:scale-105 active:scale-95 group">
+                        <div className="p-1 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110">
+                            <PdfMasterLogo className="h-7 w-7" />
                         </div>
                         <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
                             PDF Master
