@@ -8,6 +8,7 @@ import {
     Crop, Star, EyeOff, Image, FileInput, Search, ShieldCheck
 } from 'lucide-react';
 import { CardTitle, CardDescription } from '@/components/ui/Card';
+import { HomeFAQ } from '@/components/common/HomeFAQ';
 
 const tools = [
     // ... (保持 tools 数组内容一致，仅移除未使用的变量引用即可，此处直接重写以确保正确性)
@@ -150,6 +151,8 @@ export function Home() {
                     </div>
                 ))}
             </div>
+
+            <HomeFAQ />
 
             <div className="bg-primary/5 border border-primary/20 rounded-3xl p-8 text-center w-full max-w-4xl">
                 <h3 className="text-xl font-bold mb-2">每一分每一秒，PDF Master 都在变得更强大</h3>

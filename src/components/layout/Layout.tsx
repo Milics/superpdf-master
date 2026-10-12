@@ -4,6 +4,7 @@ import { FileText, SunMedium, Moon } from 'lucide-react';
 import { PdfMasterLogo } from '@/components/ui/PdfMasterLogo';
 import { AnimatePresence } from 'framer-motion';
 import { PageTransition } from '@/components/ui/PageTransition';
+import { SEOHead } from '@/components/common/SEO';
 
 export function Layout() {
     const [isDark, setIsDark] = React.useState(false);
@@ -35,6 +36,7 @@ export function Layout() {
 
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col font-sans antialiased transition-colors duration-300">
+            <SEOHead />
             <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <Link to="/" className="flex items-center space-x-2.5 transition-transform hover:scale-105 active:scale-95 group">
