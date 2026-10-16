@@ -11,8 +11,8 @@ declare global {
   }
 }
 
-// 测量 ID：优先读取环境变量 VITE_GA_MEASUREMENT_ID，若无则使用占位或直接配置
-export const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || '';
+// 测量 ID：优先读取环境变量 VITE_GA_MEASUREMENT_ID，若无则使用默认配置
+export const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-KQFL6BHJ1W';
 
 /**
  * 初始化 Google Analytics 脚本
@@ -22,7 +22,7 @@ export function initGA(measurementId: string = GA_MEASUREMENT_ID) {
   if (!measurementId || typeof window === 'undefined') return;
 
   // 避免重复注入脚本
-  if (document.getElementById('google-analytics-script')) return;
+  if (document.getElementById('google-analytics-script') || (window.gtag && window.dataLayer?.length)) return;
 
   window.dataLayer = window.dataLayer || [];
   window.gtag = function () {
