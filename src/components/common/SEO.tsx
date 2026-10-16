@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { trackPageView } from '@/lib/analytics';
 
 interface SEOProps {
   title?: string;
@@ -184,7 +185,10 @@ export function SEOHead({ title, description, keywords, canonical }: SEOProps) {
       document.head.appendChild(linkCanonical);
     }
     linkCanonical.setAttribute('href', finalCanonical);
-  }, [finalTitle, finalDesc, finalKeywords, finalCanonical]);
+
+    // 触发 Google Analytics SPA 页面浏览量上报 (PV)
+    trackPageView(location.pathname + location.search, finalTitle);
+  }, [finalTitle, finalDesc, finalKeywords, finalCanonical, location.pathname, location.search]);
 
   return null;
 }
