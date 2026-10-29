@@ -14,17 +14,19 @@ export async function mergePDFs(files: File[], outputFilename: string = 'merged_
     for (const file of files) {
         try {
             const arrayBuffer = await file.arrayBuffer();
-            // 解析单个传入的 PDF。注意这里可能会遇到加密文件报错，MVP版遇到加密直接报错跳过
-            const loadedPdf = await PDFDocument.load(arrayBuffer);
+            // 启用 ignoreEncryption: true，可直接读取并合并带有所有者权限限制/只读权限的 PDF
+            const loadedPdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
 
             const copiedPages = await mergedPdf.copyPages(loadedPdf, loadedPdf.getPageIndices());
 
             copiedPages.forEach((page) => {
                 mergedPdf.addPage(page);
             });
-        } catch (e) {
+        } catch (e: any) {
             console.error(`Error processing file ${file.name}:`, e);
-            throw new Error(`无法处理文件 ${file.name}，或许他被加密了？`);
+            const err = new Error(`无法处理文件 ${file.name}，或许它设置了打开密码或文件已损坏？`);
+            (err as any).fileName = file.name;
+            throw err;
         }
     }
 
@@ -45,12 +47,15 @@ export async function mergePDFsToBlob(files: File[]): Promise<string> {
     for (const file of files) {
         try {
             const arrayBuffer = await file.arrayBuffer();
-            const loadedPdf = await PDFDocument.load(arrayBuffer);
+            // 启用 ignoreEncryption: true，自动兼容有打印/只读权限限制但无打开密码的文档
+            const loadedPdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
             const copiedPages = await mergedPdf.copyPages(loadedPdf, loadedPdf.getPageIndices());
             copiedPages.forEach((page) => mergedPdf.addPage(page));
-        } catch (e) {
+        } catch (e: any) {
             console.error(`Error processing file ${file.name}:`, e);
-            throw new Error(`无法处理文件 ${file.name}，或许他被加密了？`);
+            const err = new Error(`无法处理文件 ${file.name}，或许它设置了打开密码或文件已损坏？`);
+            (err as any).fileName = file.name;
+            throw err;
         }
     }
 
@@ -74,9 +79,9 @@ export async function splitPDF(file: File, ranges: PdfRange[], outputFilename: s
     
     let loadedPdf;
     try {
-        loadedPdf = await PDFDocument.load(arrayBuffer);
+        loadedPdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
     } catch (e) {
-        throw new Error('无法读取该 PDF，请确定其未加密或未损坏。');
+        throw new Error('无法读取该 PDF，请确定其未设置打开密码或未损坏。');
     }
 
     const totalPages = loadedPdf.getPageCount();
@@ -108,9 +113,9 @@ export async function splitPDFToMultiple(file: File, ranges: PdfRange[]): Promis
     
     let loadedPdf;
     try {
-        loadedPdf = await PDFDocument.load(arrayBuffer);
+        loadedPdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
     } catch (e) {
-        throw new Error('无法读取该 PDF，请确定其未加密或未损坏。');
+        throw new Error('无法读取该 PDF，请确定其未设置打开密码或未损坏。');
     }
 
     const totalPages = loadedPdf.getPageCount();
@@ -189,7 +194,7 @@ export async function rotatePdfPages(
     outputFilename: string = 'rotated_document.pdf'
 ): Promise<{ url: string; filename: string }> {
     const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
     const pages = pdfDoc.getPages();
 
     const indicesToRotate = pageIndices && pageIndices.length > 0
@@ -221,7 +226,7 @@ export async function addWatermark(
 ): Promise<{ url: string; filename: string }> {
     const { fontSize = 48, opacity = 0.15, rotation = -45 } = options;
     const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
     const pages = pdfDoc.getPages();
 
     for (const page of pages) {
@@ -270,7 +275,7 @@ export async function compressPdf(
     outputFilename: string = 'compressed_document.pdf'
 ): Promise<{ url: string; filename: string; originalSize: number; compressedSize: number }> {
     const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
 
     // 通过 save 时启用对象压缩来尽量减小体积
     const compressedBytes = await pdfDoc.save({
@@ -304,7 +309,7 @@ export async function addPageNumbers(
 ): Promise<{ url: string; filename: string }> {
     const { position = 'bottom-center', fontSize = 12, startNumber = 1, format = 'number' } = options;
     const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const pages = pdfDoc.getPages();
     const totalPages = pages.length;

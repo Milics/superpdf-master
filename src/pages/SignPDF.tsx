@@ -106,7 +106,7 @@ export function SignPDF() {
         setErrorMsg(null);
         try {
             const ab = await file.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(ab);
+            const pdfDoc = await PDFDocument.load(ab, { ignoreEncryption: true });
             const pngBytes = await fetch(signatureDataUrl).then(r => r.arrayBuffer());
             const signatureImage = await pdfDoc.embedPng(pngBytes);
 

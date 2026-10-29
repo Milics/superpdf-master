@@ -189,6 +189,7 @@ export function MergePDF() {
     const [activeId, setActiveId] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [failedFileName, setFailedFileName] = useState<string | null>(null);
     const [result, setResult] = useState<{ url: string; filename: string } | null>(null);
 
     useEffect(() => {
@@ -204,6 +205,7 @@ export function MergePDF() {
 
     const handleFilesSelected = (selectedFiles: File[]) => {
         setErrorMsg(null);
+        setFailedFileName(null);
         const newItems = selectedFiles.map(file => ({
             id: `${file.name}-${file.lastModified}-${Math.random().toString(36).substring(2, 9)}`,
             file
@@ -213,6 +215,13 @@ export function MergePDF() {
 
     const handleRemoveFile = (idToRemove: string) => {
         setFileItems(prev => prev.filter(item => item.id !== idToRemove));
+    };
+
+    const handleRemoveFailedFile = () => {
+        if (!failedFileName) return;
+        setFileItems(prev => prev.filter(item => item.file.name !== failedFileName));
+        setErrorMsg(null);
+        setFailedFileName(null);
     };
 
     const handleDragStart = (event: DragStartEvent) => {
@@ -252,16 +261,19 @@ export function MergePDF() {
         setResult(null);
         setFileItems([]);
         setErrorMsg(null);
+        setFailedFileName(null);
     };
 
     const executeMerge = async () => {
         if (fileItems.length < 2) {
             setErrorMsg('请至少选择 2 个 PDF 文件进行合并。');
+            setFailedFileName(null);
             return;
         }
 
         setIsProcessing(true);
         setErrorMsg(null);
+        setFailedFileName(null);
 
         try {
             const filesToProcess = fileItems.map(item => item.file);
@@ -269,7 +281,16 @@ export function MergePDF() {
             const url = await mergePDFsToBlob(filesToProcess);
             setResult({ url, filename });
         } catch (err: any) {
-            setErrorMsg(err.message || '合并过程中发生未知错误，请确保 PDF 未被加密。');
+            const msg = err.message || '合并过程中发生未知错误，请确保 PDF 未被加密。';
+            setErrorMsg(msg);
+            if (err.fileName) {
+                setFailedFileName(err.fileName);
+            } else {
+                const match = msg.match(/无法处理文件\s+(.+?)，/);
+                if (match && match[1]) {
+                    setFailedFileName(match[1]);
+                }
+            }
         } finally {
             setIsProcessing(false);
         }
@@ -400,9 +421,24 @@ export function MergePDF() {
                     </div>
 
                     {errorMsg && (
-                        <div className="mt-4 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-sm p-4 rounded-xl flex items-start border border-red-200/50 dark:border-red-900/50 shadow-sm">
-                            <span className="shrink-0 mr-2 opacity-80 mt-0.5">⚠️</span>
-                            <p>{errorMsg}</p>
+                        <div className="mt-4 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 text-sm p-4 rounded-xl border border-red-200/50 dark:border-red-900/50 shadow-sm space-y-3">
+                            <div className="flex items-start">
+                                <span className="shrink-0 mr-2 opacity-80 mt-0.5">⚠️</span>
+                                <p className="flex-1 leading-relaxed">{errorMsg}</p>
+                            </div>
+                            {failedFileName && (
+                                <div className="pt-1">
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={handleRemoveFailedFile}
+                                        className="w-full text-xs h-9 border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 font-semibold rounded-lg shadow-none"
+                                    >
+                                        ✕ 一键移除「{failedFileName}」
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

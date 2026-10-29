@@ -163,7 +163,7 @@ export function OrganizePDF() {
             setIsProcessing(true);
             try {
                 const ab = await f.arrayBuffer();
-                const doc = await PDFDocument.load(ab);
+                const doc = await PDFDocument.load(ab, { ignoreEncryption: true });
                 const count = doc.getPageCount();
                 setOriginalCount(count);
                 setPageItems(Array.from({ length: count }, (_, i) => ({
@@ -234,7 +234,7 @@ export function OrganizePDF() {
 
         try {
             const ab = await file.arrayBuffer();
-            const srcDoc = await PDFDocument.load(ab);
+            const srcDoc = await PDFDocument.load(ab, { ignoreEncryption: true });
             const newDoc = await PDFDocument.create();
             
             const pagesToCopy = pageItems.map(item => item.originalIndex);

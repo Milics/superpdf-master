@@ -160,7 +160,7 @@ export function EditPDF() {
 
         try {
             const ab = await file.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(ab);
+            const pdfDoc = await PDFDocument.load(ab, { ignoreEncryption: true });
             // pdf-lib 需要挂载 fontkit 才能挂载特殊字体。虽然标准字体不支持中文，我们将回退使用 Helvetica 导出字母，或者尽力绘制。
             pdfDoc.registerFontkit(fontkit);
             

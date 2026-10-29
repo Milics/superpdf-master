@@ -80,7 +80,7 @@ export function PageNumberPDF() {
             try {
                 const ab = await f.arrayBuffer();
                 const { PDFDocument } = await import('pdf-lib');
-                const doc = await PDFDocument.load(ab);
+                const doc = await PDFDocument.load(ab, { ignoreEncryption: true });
                 setTotalPages(doc.getPageCount());
             } catch {
                 setTotalPages(0);

@@ -61,7 +61,7 @@ export function CropPDF() {
         setErrorMsg(null);
         try {
             const ab = await file.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(ab);
+            const pdfDoc = await PDFDocument.load(ab, { ignoreEncryption: true });
             const pages = pdfDoc.getPages();
 
             for (const page of pages) {

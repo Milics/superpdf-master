@@ -20,7 +20,7 @@ export function ExtractPages() {
             setFile(f);
             try {
                 const ab = await f.arrayBuffer();
-                const doc = await PDFDocument.load(ab);
+                const doc = await PDFDocument.load(ab, { ignoreEncryption: true });
                 setPageCount(doc.getPageCount());
             } catch { setPageCount(0); }
         }
@@ -43,7 +43,7 @@ export function ExtractPages() {
         setErrorMsg(null);
         try {
             const ab = await file.arrayBuffer();
-            const srcDoc = await PDFDocument.load(ab);
+            const srcDoc = await PDFDocument.load(ab, { ignoreEncryption: true });
             const newDoc = await PDFDocument.create();
             const indices = Array.from(selectedPages).sort((a, b) => a - b);
             const copied = await newDoc.copyPages(srcDoc, indices);

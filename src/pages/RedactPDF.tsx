@@ -47,7 +47,7 @@ export function RedactPDF() {
 
         // 获取真实页面尺寸
         file.arrayBuffer().then(async ab => {
-            const doc = await PDFDocument.load(ab);
+            const doc = await PDFDocument.load(ab, { ignoreEncryption: true });
             const p = doc.getPages()[0];
             if (active) setPageSize(p.getSize());
         });
@@ -130,7 +130,7 @@ export function RedactPDF() {
         setErrorMsg(null);
         try {
             const ab = await file.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(ab);
+            const pdfDoc = await PDFDocument.load(ab, { ignoreEncryption: true });
             const firstPage = pdfDoc.getPages()[0];
             const { width, height } = firstPage.getSize();
 
