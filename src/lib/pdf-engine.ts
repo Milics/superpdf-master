@@ -1,32 +1,94 @@
 import { PDFDocument, degrees as pdfDegrees, rgb, StandardFonts } from 'pdf-lib';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// 确保纯前端环境 pdfjs worker 正常初始化
+if (typeof window !== 'undefined' && pdfjsLib?.GlobalWorkerOptions) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+}
+
+/**
+ * 容错降级：当 pdf-lib 遇到加密的 Object Stream（ObjStm）或特殊受保护结构解析失败时，
+ * 使用 pdfjs-dist（具备完整 RC4/AES 解密引擎）自动以空密码解密并高清重建页面加入目标文档。
+ */
+async function appendPdfViaPdfJs(mergedPdf: PDFDocument, arrayBuffer: ArrayBuffer): Promise<void> {
+    const loadingTask = pdfjsLib.getDocument({
+        data: new Uint8Array(arrayBuffer),
+        password: '', // 自动使用空密码解密所有只读/所有者权限保护的 PDF
+    });
+    const pdfDoc = await loadingTask.promise;
+    const totalPages = pdfDoc.numPages;
+
+    for (let i = 1; i <= totalPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale: 2 }); // 2x 超清保证印刷级字体清晰度
+
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) continue;
+
+        await page.render({ canvasContext: ctx, viewport } as any).promise;
+
+        const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        const base64Data = jpegDataUrl.split(',')[1];
+        const binaryStr = atob(base64Data);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let b = 0; b < binaryStr.length; b++) {
+            bytes[b] = binaryStr.charCodeAt(b);
+        }
+
+        const image = await mergedPdf.embedJpg(bytes);
+        const origViewport = page.getViewport({ scale: 1 });
+        const newPage = mergedPdf.addPage([origViewport.width, origViewport.height]);
+        newPage.drawImage(image, {
+            x: 0,
+            y: 0,
+            width: origViewport.width,
+            height: origViewport.height,
+        });
+
+        // 及时清空 canvas 释放内存
+        canvas.width = 0;
+        canvas.height = 0;
+    }
+}
 
 /**
  * 将传入的多个 PDF File 对象合并为单个 PDF 并在浏览器中触发下载。
  */
-export async function mergePDFs(files: File[], outputFilename: string = 'merged_document.pdf'): Promise<void> {
+export async function mergePDFs(
+    files: File[], 
+    outputFilename: string = 'merged_document.pdf',
+    onProgress?: (current: number, total: number, filename: string) => void
+): Promise<void> {
     if (files.length === 0) {
         throw new Error('No files provided for merging');
     }
 
-    // 创建一个全新的、空的 PDF
     const mergedPdf = await PDFDocument.create();
 
-    for (const file of files) {
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (onProgress) onProgress(i + 1, files.length, file.name);
+
+        const arrayBuffer = await file.arrayBuffer();
         try {
-            const arrayBuffer = await file.arrayBuffer();
-            // 启用 ignoreEncryption: true，可直接读取并合并带有所有者权限限制/只读权限的 PDF
+            // 优先尝试原生快速拼装（矢量级）
             const loadedPdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-
             const copiedPages = await mergedPdf.copyPages(loadedPdf, loadedPdf.getPageIndices());
-
-            copiedPages.forEach((page) => {
-                mergedPdf.addPage(page);
-            });
-        } catch (e: any) {
-            console.error(`Error processing file ${file.name}:`, e);
-            const err = new Error(`无法处理文件 ${file.name}，或许它设置了打开密码或文件已损坏？`);
-            (err as any).fileName = file.name;
-            throw err;
+            copiedPages.forEach((page) => mergedPdf.addPage(page));
+        } catch (libErr) {
+            console.warn(`[PDF Merge] pdf-lib 解析 ${file.name} 遇到加密结构，自动启动 pdfjs-dist 高清容错恢复...`, libErr);
+            try {
+                // 自动启用具备完整 RC4/AES 解密能力的 pdfjs-dist
+                await appendPdfViaPdfJs(mergedPdf, arrayBuffer);
+            } catch (fallbackErr: any) {
+                console.error(`Error processing file ${file.name}:`, fallbackErr);
+                const err = new Error(`无法处理文件 ${file.name}，该文件可能损坏或被强密码加密。`);
+                (err as any).fileName = file.name;
+                throw err;
+            }
         }
     }
 
@@ -35,27 +97,39 @@ export async function mergePDFs(files: File[], outputFilename: string = 'merged_
 
 /**
  * 将传入的多个 PDF File 对象合并为单个 PDF，返回 Blob URL（不自动下载）。
- * 调用方负责在适当时机释放 URL（URL.revokeObjectURL）。
+ * 具备双引擎自动容错（pdf-lib + pdfjs-dist）。
  */
-export async function mergePDFsToBlob(files: File[]): Promise<string> {
+export async function mergePDFsToBlob(
+    files: File[],
+    onProgress?: (current: number, total: number, filename: string) => void
+): Promise<string> {
     if (files.length === 0) {
         throw new Error('No files provided for merging');
     }
 
     const mergedPdf = await PDFDocument.create();
 
-    for (const file of files) {
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (onProgress) onProgress(i + 1, files.length, file.name);
+
+        const arrayBuffer = await file.arrayBuffer();
         try {
-            const arrayBuffer = await file.arrayBuffer();
-            // 启用 ignoreEncryption: true，自动兼容有打印/只读权限限制但无打开密码的文档
+            // 优先快速矢量拼接
             const loadedPdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
             const copiedPages = await mergedPdf.copyPages(loadedPdf, loadedPdf.getPageIndices());
             copiedPages.forEach((page) => mergedPdf.addPage(page));
-        } catch (e: any) {
-            console.error(`Error processing file ${file.name}:`, e);
-            const err = new Error(`无法处理文件 ${file.name}，或许它设置了打开密码或文件已损坏？`);
-            (err as any).fileName = file.name;
-            throw err;
+        } catch (libErr) {
+            console.warn(`[PDF Merge] 遇到特殊受保护文档 ${file.name}，自动启动 pdfjs-dist 高清容错拼接...`, libErr);
+            try {
+                // 容错接管：解密并拼接
+                await appendPdfViaPdfJs(mergedPdf, arrayBuffer);
+            } catch (fallbackErr: any) {
+                console.error(`Error processing file ${file.name}:`, fallbackErr);
+                const err = new Error(`无法处理文件 ${file.name}，该文件可能损坏或被强密码加密。`);
+                (err as any).fileName = file.name;
+                throw err;
+            }
         }
     }
 

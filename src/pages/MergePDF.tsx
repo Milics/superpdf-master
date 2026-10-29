@@ -188,6 +188,7 @@ export function MergePDF() {
     const [fileItems, setFileItems] = useState<{ id: string, file: File }[]>([]);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [progressText, setProgressText] = useState('');
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [failedFileName, setFailedFileName] = useState<string | null>(null);
     const [result, setResult] = useState<{ url: string; filename: string } | null>(null);
@@ -274,11 +275,14 @@ export function MergePDF() {
         setIsProcessing(true);
         setErrorMsg(null);
         setFailedFileName(null);
+        setProgressText('正在初始化合并引擎…');
 
         try {
             const filesToProcess = fileItems.map(item => item.file);
             const filename = `Merged_${new Date().getTime()}.pdf`;
-            const url = await mergePDFsToBlob(filesToProcess);
+            const url = await mergePDFsToBlob(filesToProcess, (current, total, name) => {
+                setProgressText(`正在合并 (${current}/${total}): ${name}`);
+            });
             setResult({ url, filename });
         } catch (err: any) {
             const msg = err.message || '合并过程中发生未知错误，请确保 PDF 未被加密。';
@@ -444,6 +448,11 @@ export function MergePDF() {
                 </div>
                 
                 <div className="p-6 md:p-8 bg-background/90 backdrop-blur sticky bottom-0 border-t border-border/40 md:border-t-0 pb-12 md:pb-8">
+                    {isProcessing && progressText && (
+                        <div className="mb-3 text-xs text-center text-primary font-medium animate-pulse truncate px-1">
+                            {progressText}
+                        </div>
+                    )}
                     <Button 
                         size="lg" 
                         onClick={executeMerge}
