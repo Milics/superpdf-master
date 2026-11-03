@@ -9,83 +9,100 @@ import {
 } from 'lucide-react';
 import { CardTitle, CardDescription } from '@/components/ui/Card';
 import { HomeFAQ } from '@/components/common/HomeFAQ';
+import { useTranslation } from '@/i18n/LanguageContext';
 
-const tools = [
-    // ... (保持 tools 数组内容一致，仅移除未使用的变量引用即可，此处直接重写以确保正确性)
+interface ToolDef {
+    id: string;
+    icon: React.ReactNode;
+    color: string;
+    href: string;
+}
+
+const TOOL_SECTIONS: Array<{ categoryKey: 'organize' | 'convert' | 'fromPdf' | 'editOptimize' | 'advanced'; items: ToolDef[] }> = [
     {
-        category: '组织 PDF',
+        categoryKey: 'organize',
         items: [
-            { id: 'merge', title: '合并 PDF', description: '将多个 PDF 合并为一个。', icon: <Layers />, color: 'bg-orange-500', href: '/merge' },
-            { id: 'split', title: '拆分 PDF', description: '将 PDF 拆分为多个文档。', icon: <Scissors />, color: 'bg-orange-500', href: '/split' },
-            { id: 'organize', title: '整理 PDF', description: '删除、提取或拖拽重排页面顺序。', icon: <FolderTree />, color: 'bg-orange-500', href: '/organize' },
-            { id: 'scan', title: '扫描成 PDF', description: '移动端扫描文档。', icon: <Scan />, color: 'bg-orange-500', href: '/scan' },
+            { id: 'merge', icon: <Layers />, color: 'bg-orange-500', href: '/merge' },
+            { id: 'split', icon: <Scissors />, color: 'bg-orange-500', href: '/split' },
+            { id: 'organize', icon: <FolderTree />, color: 'bg-orange-500', href: '/organize' },
+            { id: 'scan', icon: <Scan />, color: 'bg-orange-500', href: '/scan' },
         ]
     },
     {
-        category: '转换 PDF',
+        categoryKey: 'convert',
         items: [
-            { id: 'img2pdf', title: 'JPG 转 PDF', description: '将图片转换为 PDF。', icon: <Image />, color: 'bg-emerald-500', href: '/img2pdf' },
-            { id: 'word2pdf', title: 'Word 转 PDF', description: 'DOCX 转为 PDF。', icon: <FileText />, color: 'bg-blue-600', href: '/word2pdf' },
-            { id: 'ppt2pdf', title: 'PowerPoint 转 PDF', description: 'PPT 转为 PDF。', icon: <Presentation />, color: 'bg-orange-600', href: '/ppt2pdf' },
-            { id: 'excel2pdf', title: 'Excel 转 PDF', description: 'XLSX 转为 PDF。', icon: <FileSpreadsheet />, color: 'bg-green-600', href: '/excel2pdf' },
-            { id: 'html2pdf', title: 'HTML 转 PDF', description: '网页转为 PDF。', icon: <FileCode />, color: 'bg-cyan-500', href: '/html2pdf' },
+            { id: 'img2pdf', icon: <Image />, color: 'bg-emerald-500', href: '/img2pdf' },
+            { id: 'word2pdf', icon: <FileText />, color: 'bg-blue-600', href: '/word2pdf' },
+            { id: 'ppt2pdf', icon: <Presentation />, color: 'bg-orange-600', href: '/ppt2pdf' },
+            { id: 'excel2pdf', icon: <FileSpreadsheet />, color: 'bg-green-600', href: '/excel2pdf' },
+            { id: 'html2pdf', icon: <FileCode />, color: 'bg-cyan-500', href: '/html2pdf' },
         ]
     },
     {
-        category: '从 PDF 转换',
+        categoryKey: 'fromPdf',
         items: [
-            { id: 'pdf2jpg', title: 'PDF 转 JPG', description: '提取 PDF 中的图像或转为 JPG。', icon: <Image />, color: 'bg-emerald-400', href: '/pdf2jpg' },
-            { id: 'pdf2word', title: 'PDF 转 Word', description: 'PDF 转为可编辑 DOCX。', icon: <FileText />, color: 'bg-blue-400', href: '/pdf2word' },
-            { id: 'pdf2ppt', title: 'PDF 转 PowerPoint', description: 'PDF 转为 PPTX 幻灯片。', icon: <Presentation />, color: 'bg-orange-400', href: '/pdf2ppt' },
-            { id: 'pdf2excel', title: 'PDF 转 Excel', description: 'PDF 数据导入电子表格。', icon: <FileSpreadsheet />, color: 'bg-green-400', href: '/pdf2excel' },
-            { id: 'pdf2a', title: 'PDF 转 PDF/A', description: '长期存档标准格式。', icon: <ShieldCheck />, color: 'bg-slate-500', href: '/pdf2pdfa' },
+            { id: 'pdf2jpg', icon: <Image />, color: 'bg-emerald-400', href: '/pdf2jpg' },
+            { id: 'pdf2word', icon: <FileText />, color: 'bg-blue-400', href: '/pdf2word' },
+            { id: 'pdf2ppt', icon: <Presentation />, color: 'bg-orange-400', href: '/pdf2ppt' },
+            { id: 'pdf2excel', icon: <FileSpreadsheet />, color: 'bg-green-400', href: '/pdf2excel' },
+            { id: 'pdf2a', icon: <ShieldCheck />, color: 'bg-slate-500', href: '/pdf2pdfa' },
         ]
     },
     {
-        category: '编辑与优化',
+        categoryKey: 'editOptimize',
         items: [
-            { id: 'compress', title: '压缩 PDF', description: '减小文件体积。', icon: <FileArchive />, color: 'bg-blue-500', href: '/compress' },
-            { id: 'edit', title: '编辑 PDF', description: '添加文字、图像、形状。', icon: <PenTool />, color: 'bg-orange-500', href: '/edit' },
-            { id: 'sign', title: '签署 PDF', description: '添加电子签名。', icon: <FileInput />, color: 'bg-rose-500', href: '/sign' },
-            { id: 'watermark', title: '水印', description: '添加文字或图片水印。', icon: <Type />, color: 'bg-purple-500', href: '/watermark' },
-            { id: 'rotate', title: '旋转 PDF', description: '翻转页面方向。', icon: <RotateCw />, color: 'bg-orange-500', href: '/rotate' },
-            { id: 'unlock', title: '解锁 PDF', description: '解除密码保护。', icon: <Unlock />, color: 'bg-rose-600', href: '/unlock' },
-            { id: 'protect', title: '保护 PDF', description: '添加加密密码。', icon: <Lock />, color: 'bg-rose-700', href: '/protect' },
+            { id: 'compress', icon: <FileArchive />, color: 'bg-blue-500', href: '/compress' },
+            { id: 'edit', icon: <PenTool />, color: 'bg-orange-500', href: '/edit' },
+            { id: 'sign', icon: <FileInput />, color: 'bg-rose-500', href: '/sign' },
+            { id: 'watermark', icon: <Type />, color: 'bg-purple-500', href: '/watermark' },
+            { id: 'rotate', icon: <RotateCw />, color: 'bg-orange-500', href: '/rotate' },
+            { id: 'unlock', icon: <Unlock />, color: 'bg-rose-600', href: '/unlock' },
+            { id: 'protect', icon: <Lock />, color: 'bg-rose-700', href: '/protect' },
         ]
     },
     {
-        category: '高级工具',
+        categoryKey: 'advanced',
         items: [
-            { id: 'pagenumber', title: '页码', description: '为 PDF 添加页数。', icon: <Hash />, color: 'bg-purple-600', href: '/pagenumber' },
-            { id: 'ocr', title: 'OCR PDF', description: '识别人像或扫描件文字。', icon: <Search />, color: 'bg-blue-800', href: '/ocr' },
-            { id: 'compare', title: '比较 PDF', description: '查看文件差异。', icon: <GitCompare />, color: 'bg-slate-700', href: '/compare' },
-            { id: 'translate', title: '翻译 PDF', description: '全文 AI 翻译。', icon: <Languages />, color: 'bg-indigo-600', href: '/translate' },
-            { id: 'crop', title: '裁剪 PDF', description: '裁剪页面边距。', icon: <Crop />, color: 'bg-orange-600', href: '/crop' },
-            { id: 'redact', title: '涂黑 PDF', description: '永久隐藏敏感信息。', icon: <EyeOff />, color: 'bg-gray-900', href: '/redact' },
+            { id: 'pagenumber', icon: <Hash />, color: 'bg-purple-600', href: '/pagenumber' },
+            { id: 'ocr', icon: <Search />, color: 'bg-blue-800', href: '/ocr' },
+            { id: 'compare', icon: <GitCompare />, color: 'bg-slate-700', href: '/compare' },
+            { id: 'translate', icon: <Languages />, color: 'bg-indigo-600', href: '/translate' },
+            { id: 'crop', icon: <Crop />, color: 'bg-orange-600', href: '/crop' },
+            { id: 'redact', icon: <EyeOff />, color: 'bg-gray-900', href: '/redact' },
         ]
     }
 ];
 
 export function Home() {
+    const { t, lang } = useTranslation();
+
     return (
         <div className="flex flex-col items-center justify-center space-y-16 py-12 px-4 max-w-7xl mx-auto">
+            {/* Hero 标题区域 */}
             <div className="text-center max-w-3xl space-y-6">
                 <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl mb-6">
-                    属于您的全能{' '}
+                    {t.home.heroTitlePrefix}{' '}
                     <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-rose-500">
-                        PDF 专家工具
+                        {t.home.heroTitleHighlight}
                     </span>
                 </h1>
                 <p className="text-xl text-muted-foreground leading-relaxed">
-                    提供 30+ 种专业级 PDF 工具。所有操作均在<span className="font-bold text-foreground">浏览器本地加密运行</span>，无需上传，绝不泄露隐私，极速处理。
+                    {t.home.heroSubtitlePrefix}
+                    <span className="font-bold text-foreground mx-1">
+                        {t.home.heroSubtitleHighlight}
+                    </span>
+                    {t.home.heroSubtitleSuffix}
                 </p>
             </div>
 
+            {/* 工具网格区域 */}
             <div className="space-y-16 w-full">
-                {tools.map((section) => (
-                    <div key={section.category} className="space-y-8">
+                {TOOL_SECTIONS.map((section) => (
+                    <div key={section.categoryKey} className="space-y-8">
                         <div className="flex items-center space-x-4">
-                            <h2 className="text-2xl font-bold border-l-4 border-primary pl-4">{section.category}</h2>
+                            <h2 className="text-2xl font-bold border-l-4 border-primary pl-4">
+                                {t.home.categories[section.categoryKey]}
+                            </h2>
                             <div className="h-px bg-border flex-1"></div>
                         </div>
                         <motion.div
@@ -104,6 +121,7 @@ export function Home() {
                             {section.items.map((tool) => {
                                 const isReady = !!tool.href;
                                 const Component = isReady ? Link : 'div';
+                                const meta = t.home.tools[tool.id] || { title: tool.id, description: '' };
 
                                 return (
                                     <motion.div
@@ -126,15 +144,15 @@ export function Home() {
                                                 </div>
                                                 <div className="space-y-1">
                                                     <CardTitle className="text-lg font-bold flex items-center">
-                                                        {tool.title}
+                                                        {meta.title}
                                                         {!isReady && (
                                                             <span className="ml-2 text-[10px] font-normal px-2 py-0.5 rounded-full bg-muted border border-border/50">
-                                                                开发中
+                                                                {lang === 'zh' ? '开发中' : 'Coming soon'}
                                                             </span>
                                                         )}
                                                     </CardTitle>
                                                     <CardDescription className="text-sm line-clamp-2 leading-snug">
-                                                        {tool.description}
+                                                        {meta.description}
                                                     </CardDescription>
                                                 </div>
                                             </div>
@@ -152,11 +170,20 @@ export function Home() {
                 ))}
             </div>
 
+            {/* 核心优势与常见问题 */}
             <HomeFAQ />
 
+            {/* 底部愿景卡片 */}
             <div className="bg-primary/5 border border-primary/20 rounded-3xl p-8 text-center w-full max-w-4xl">
-                <h3 className="text-xl font-bold mb-2">每一分每一秒，PDF Master 都在变得更强大</h3>
-                <p className="text-muted-foreground">我们正在持续优化各项工具的高性能处理引擎。如果您有任何功能建议或定制需求，欢迎随时联系我们。</p>
+                <h3 className="text-xl font-bold mb-2">
+                    {lang === 'zh' ? '每一分每一秒，PDF Master 都在变得更强大' : 'Continuously Evolving to Empower Your PDF Workflow'}
+                </h3>
+                <p className="text-muted-foreground text-sm">
+                    {lang === 'zh' 
+                        ? '我们正在持续优化各项工具的高性能处理引擎。如果您有任何功能建议或定制需求，欢迎随时联系我们。'
+                        : 'We are continuously engineering lightning-fast client-side engines. Have suggestions or feature requests? Feel free to reach out.'
+                    }
+                </p>
             </div>
         </div>
     );

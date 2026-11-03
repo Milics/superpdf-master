@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { trackPageView } from '@/lib/analytics';
+import { useTranslation } from '@/i18n/LanguageContext';
 
 interface SEOProps {
   title?: string;
@@ -144,13 +145,27 @@ const ROUTE_SEO_MAP: Record<string, { title: string; description: string; keywor
 };
 
 export function SEOHead({ title, description, keywords, canonical }: SEOProps) {
+  const { lang } = useTranslation();
   const location = useLocation();
   const currentPath = location.pathname.toLowerCase();
   const mapped = ROUTE_SEO_MAP[currentPath] || ROUTE_SEO_MAP['/'];
 
-  const finalTitle = title || mapped.title;
-  const finalDesc = description || mapped.description;
-  const finalKeywords = keywords || mapped.keywords;
+  let finalTitle = title || mapped.title;
+  let finalDesc = description || mapped.description;
+  let finalKeywords = keywords || mapped.keywords;
+
+  if (lang === 'en' && !title) {
+    if (currentPath === '/') {
+      finalTitle = 'PDF Master - Free Online PDF Power Tools | 100% Client-Side Privacy';
+      finalDesc = 'PDF Master is a free, unrestricted all-in-one PDF toolkit. Merge, split, compress, OCR, convert and edit PDFs securely right inside your browser. 100% private, no server upload.';
+      finalKeywords = 'PDF Master, online PDF tools, merge PDF, split PDF, compress PDF, PDF to Word, OCR, secure PDF, client-side PDF';
+    } else {
+      const toolSlug = currentPath.replace('/', '');
+      finalTitle = `${toolSlug.toUpperCase()} - Free Online PDF Tool | PDF Master`;
+      finalDesc = `Fast, free, and secure ${toolSlug} tool. Runs 100% in your browser without uploading files to any servers.`;
+    }
+  }
+
   const finalCanonical = canonical || `https://superpdf-master.pages.dev${location.pathname === '/' ? '' : location.pathname}`;
 
   useEffect(() => {

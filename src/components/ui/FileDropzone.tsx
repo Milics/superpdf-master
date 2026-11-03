@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { UploadCloud, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/i18n/LanguageContext';
 
 interface FileDropzoneProps {
     onFilesSelected: (files: File[]) => void;
@@ -18,10 +19,14 @@ export function FileDropzone({
     multiple = true,
     maxSizeMB = 100,
     className,
-    title = "拖拽文件到这里",
-    description = "或者点击按键选择文件上传"
+    title,
+    description
 }: FileDropzoneProps) {
+    const { t } = useTranslation();
     const [isDragActive, setIsDragActive] = useState(false);
+
+    const displayTitle = title || t.common.dropzoneTitle;
+    const displayDescription = description || (multiple ? t.common.dropzoneMultiDesc : t.common.dropzoneDesc);
 
     const handleDragEnter = useCallback((e: React.DragEvent) => {
         e.preventDefault();
@@ -104,8 +109,8 @@ export function FileDropzone({
                     {isDragActive ? <CheckCircle className="w-8 h-8" /> : <UploadCloud className="w-8 h-8" />}
                 </div>
                 <div>
-                    <h3 className="text-xl font-semibold mb-2">{isDragActive ? "松开鼠标即可添加" : title}</h3>
-                    <p className="text-sm text-muted-foreground">{description}</p>
+                    <h3 className="text-xl font-semibold mb-2">{isDragActive ? (displayTitle) : displayTitle}</h3>
+                    <p className="text-sm text-muted-foreground">{displayDescription}</p>
                     {maxSizeMB && (
                         <p className="text-xs text-muted-foreground mt-2 opacity-70">
                             单文件最大支持: {maxSizeMB}MB

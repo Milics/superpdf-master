@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { LanguageProvider } from '@/i18n/LanguageContext';
 import { Layout } from '@/components/layout/Layout';
 import { Home } from '@/pages/Home';
 import { MergePDF } from '@/pages/MergePDF';
@@ -39,50 +40,52 @@ import {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          
-          {/* Core Phase 1 Tools */}
-          <Route path="merge" element={<MergePDF />} />
-          <Route path="split" element={<SplitPDF />} />
-          <Route path="img2pdf" element={<ImgToPDF />} />
-          <Route path="pdf2jpg" element={<PdfToJpg />} />
-          <Route path="rotate" element={<RotatePDF />} />
-          <Route path="watermark" element={<WatermarkPDF />} />
-          <Route path="compress" element={<CompressPDF />} />
-          <Route path="organize" element={<OrganizePDF />} />
-          <Route path="remove" element={<RemovePages />} />
-          
-          {/* Phase 2 / In Development Placeholders */}
-          <Route path="pagenumber" element={<PageNumberPDF />} />
-          <Route path="unlock" element={<UnlockPDF />} />
-          <Route path="protect" element={<ProtectPDF />} />
-          <Route path="sign" element={<SignPDF />} />
-          <Route path="crop" element={<CropPDF />} />
-          <Route path="edit" element={<EditPDF />} />
-          <Route path="repair" element={<RepairPDF />} />
-          <Route path="extract" element={<Navigate to="/organize" replace />} />
-          <Route path="html2pdf" element={<HtmlToPdf />} />
-          <Route path="redact" element={<RedactPDF />} />
-          <Route path="word2pdf" element={<WordToPdf />} />
-          <Route path="ppt2pdf" element={<PptToPdf />} />
-          <Route path="excel2pdf" element={<ExcelToPdf />} />
-          <Route path="pdf2word" element={<PdfToWord />} />
-          <Route path="pdf2ppt" element={<PdfToPpt />} />
-          <Route path="pdf2excel" element={<PdfToExcel />} />
-          <Route path="pdf2pdfa" element={<PdfToPdfa />} />
-          <Route path="ocr" element={<OcrPdf />} />
-          <Route path="scan" element={<ScanToPdf />} />
-          <Route path="compare" element={<ComparePdf />} />
-          <Route path="translate" element={<TranslatePdf />} />
-          
-          {/* Catch all */}
-          <Route path="*" element={<div className="p-20 text-center text-xl">404 - 页面未找到</div>} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <LanguageProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            
+            {/* Core Phase 1 Tools */}
+            <Route path="merge" element={<MergePDF />} />
+            <Route path="split" element={<SplitPDF />} />
+            <Route path="img2pdf" element={<ImgToPDF />} />
+            <Route path="pdf2jpg" element={<PdfToJpg />} />
+            <Route path="rotate" element={<RotatePDF />} />
+            <Route path="watermark" element={<WatermarkPDF />} />
+            <Route path="compress" element={<CompressPDF />} />
+            <Route path="organize" element={<OrganizePDF />} />
+            <Route path="remove" element={<RemovePages />} />
+            
+            {/* Phase 2 / In Development Placeholders */}
+            <Route path="pagenumber" element={<PageNumberPDF />} />
+            <Route path="unlock" element={<UnlockPDF />} />
+            <Route path="protect" element={<ProtectPDF />} />
+            <Route path="sign" element={<SignPDF />} />
+            <Route path="crop" element={<CropPDF />} />
+            <Route path="edit" element={<EditPDF />} />
+            <Route path="repair" element={<RepairPDF />} />
+            <Route path="extract" element={<Navigate to="/organize" replace />} />
+            <Route path="html2pdf" element={<HtmlToPdf />} />
+            <Route path="redact" element={<RedactPDF />} />
+            <Route path="word2pdf" element={<WordToPdf />} />
+            <Route path="ppt2pdf" element={<PptToPdf />} />
+            <Route path="excel2pdf" element={<ExcelToPdf />} />
+            <Route path="pdf2word" element={<PdfToWord />} />
+            <Route path="pdf2ppt" element={<PdfToPpt />} />
+            <Route path="pdf2excel" element={<PdfToExcel />} />
+            <Route path="pdf2pdfa" element={<PdfToPdfa />} />
+            <Route path="ocr" element={<OcrPdf />} />
+            <Route path="scan" element={<ScanToPdf />} />
+            <Route path="compare" element={<ComparePdf />} />
+            <Route path="translate" element={<TranslatePdf />} />
+            
+            {/* Catch all */}
+            <Route path="*" element={<div className="p-20 text-center text-xl">404 - Not Found</div>} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </LanguageProvider>
   );
 }
 

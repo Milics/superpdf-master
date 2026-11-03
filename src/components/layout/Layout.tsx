@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation, useOutlet } from 'react-router-dom';
-import { FileText, SunMedium, Moon } from 'lucide-react';
+import { FileText, SunMedium, Moon, Globe } from 'lucide-react';
 import { PdfMasterLogo } from '@/components/ui/PdfMasterLogo';
 import { AnimatePresence } from 'framer-motion';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { SEOHead } from '@/components/common/SEO';
+import { useTranslation } from '@/i18n/LanguageContext';
 
 export function Layout() {
+    const { lang, t, toggleLanguage } = useTranslation();
     const [isDark, setIsDark] = React.useState(false);
     const location = useLocation();
     const currentOutlet = useOutlet();
@@ -48,11 +50,22 @@ export function Layout() {
                         </span>
                     </Link>
 
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-3">
+                        {/* 语言切换按钮 (中/EN) */}
+                        <button
+                            onClick={toggleLanguage}
+                            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full border border-border/70 hover:border-primary/50 hover:bg-accent transition-all text-xs font-semibold cursor-pointer shadow-xs active:scale-95"
+                            title={t.common.langSwitch}
+                        >
+                            <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span>{lang === 'zh' ? 'English' : '中文'}</span>
+                        </button>
+
+                        {/* 主题切换按钮 */}
                         <button
                             onClick={toggleTheme}
-                            className="p-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                            title="切换原色/暗色模式"
+                            className="p-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+                            title={t.common.themeToggle}
                         >
                             {isDark ? <SunMedium className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                         </button>
@@ -70,9 +83,9 @@ export function Layout() {
 
             <footer className="border-t py-6 md:py-0 bg-muted/20">
                 <div className="container mx-auto px-4 flex flex-col md:h-16 items-center justify-between md:flex-row space-y-4 md:space-y-0 text-sm text-muted-foreground">
-                    <p>© {new Date().getFullYear()} PDF Master Tool. 本地安全处理，保护您的隐私。</p>
+                    <p>© {new Date().getFullYear()} PDF Master Tool. {t.common.privacyFooter}</p>
                     <div className="flex items-center space-x-4">
-                        <span className="flex items-center"><FileText className="w-4 h-4 mr-1" />完全本地化</span>
+                        <span className="flex items-center"><FileText className="w-4 h-4 mr-1" />{t.common.localSecureBadge}</span>
                     </div>
                 </div>
             </footer>
