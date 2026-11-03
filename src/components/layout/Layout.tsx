@@ -54,11 +54,11 @@ export function Layout() {
                         {/* 语言切换按钮 (中/EN) */}
                         <button
                             onClick={toggleLanguage}
-                            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full border border-border/70 hover:border-primary/50 hover:bg-accent transition-all text-xs font-semibold cursor-pointer shadow-xs active:scale-95"
+                            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 hover:bg-primary/10 text-foreground transition-all text-xs cursor-pointer active:scale-95 shadow-xs"
                             title={t.common.langSwitch}
                         >
-                            <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span>{lang === 'zh' ? 'English' : '中文'}</span>
+                            <Globe className="h-4 w-4 text-primary" />
+                            <span className="font-semibold">{lang === 'zh' ? 'EN / 英文' : '中文 (ZH)'}</span>
                         </button>
 
                         {/* 主题切换按钮 */}
